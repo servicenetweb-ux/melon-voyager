@@ -1,0 +1,1 @@
+Media Library is working. Upload image -> copy /uploads/... URL -> paste in Settings. Next update: visual image picker.

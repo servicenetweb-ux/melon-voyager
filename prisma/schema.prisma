@@ -1,0 +1,217 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PageType {
+  HOME
+  EXCURSIONS
+  CAR_RENTAL
+  ABOUT
+  CONTACT
+  CUSTOM
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  DOCUMENT
+}
+
+model SiteSettings {
+  id                 String   @id @default(cuid())
+  companyName        String   @default("Melon Travel")
+  tagline            String?
+  logoUrl            String?
+  faviconUrl         String?
+  phone              String?
+  whatsapp           String?
+  email              String?
+  address            String?
+  googleMapsEmbedUrl String?
+  facebookUrl        String?
+  instagramUrl       String?
+  facebookActive     Boolean  @default(false)
+  instagramActive    Boolean  @default(false)
+  tiktokUrl          String?
+  tripadvisorUrl     String?
+  primaryColor       String   @default("#00BCD4")
+  secondaryColor     String   @default("#0077B6")
+  accentColor        String   @default("#FFB347")
+  backgroundColor    String   @default("#FFFFFF")
+  adminUsername      String   @default("admin")
+  adminPassword      String   @default("melonadmin2026")
+  seoTitle           String?
+  seoDescription     String?
+  ogImageUrl         String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model NavigationItem {
+  id        String   @id @default(cuid())
+  label     String
+  href      String
+  order     Int      @default(0)
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active, order])
+}
+
+model Page {
+  id             String    @id @default(cuid())
+  type           PageType  @default(CUSTOM)
+  slug           String    @unique
+  title          String
+  subtitle       String?
+  body           String?
+  heroImageUrl   String?
+  heroBadge      String?
+  heroTitle      String?
+  heroSubtitle   String?
+  heroButtonText String?
+  heroButtonLink String?
+  seoTitle       String?
+  seoDescription String?
+  ogImageUrl     String?
+  active         Boolean   @default(true)
+  order          Int       @default(0)
+  sections       Section[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([type])
+  @@index([active, order])
+}
+
+model Section {
+  id          String   @id @default(cuid())
+  pageId      String
+  page        Page     @relation(fields: [pageId], references: [id], onDelete: Cascade)
+  key         String
+  title       String?
+  subtitle    String?
+  body        String?
+  imageUrl    String?
+  buttonLabel String?
+  buttonHref  String?
+  active      Boolean  @default(true)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([pageId, key])
+  @@index([pageId, active, order])
+}
+
+model ExcursionCategory {
+  id          String      @id @default(cuid())
+  name        String
+  slug        String      @unique
+  imageUrl    String?
+  active      Boolean     @default(true)
+  order       Int         @default(0)
+  excursions  Excursion[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([active, order])
+}
+
+model Excursion {
+  id               String   @id @default(cuid())
+  categoryId       String?
+  category         ExcursionCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  title            String
+  slug             String   @unique
+  shortDescription String?
+  fullDescription  String?
+  coverImageUrl    String?
+  duration         String?
+  availableDays    String?
+  departureTime    String?
+  returnTime       String?
+  included         String?
+  notIncluded      String?
+  meetingPoint     String?
+  featured         Boolean  @default(false)
+  active           Boolean  @default(true)
+  order            Int      @default(0)
+  seoTitle         String?
+  seoDescription   String?
+  ogImageUrl       String?
+  gallery          Media[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([categoryId])
+  @@index([active, featured, order])
+}
+
+model CarCategory {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  imageUrl  String?
+  active    Boolean  @default(true)
+  order     Int      @default(0)
+  cars      Car[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active, order])
+}
+
+model Car {
+  id             String       @id @default(cuid())
+  categoryId     String?
+  category       CarCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  name           String
+  slug           String       @unique
+  description    String?
+  coverImageUrl  String?
+  features       String?
+  featured       Boolean      @default(false)
+  active         Boolean      @default(true)
+  order          Int          @default(0)
+  seoTitle       String?
+  seoDescription String?
+  ogImageUrl     String?
+  gallery        Media[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([categoryId])
+  @@index([active, featured, order])
+}
+
+model Media {
+  id               String     @id @default(cuid())
+  type             MediaType  @default(IMAGE)
+  url              String
+  fileName         String?
+  originalFileName String?
+  mimeType         String?
+  size             Int?
+  width            Int?
+  height           Int?
+  altText          String?
+  title            String?
+  order            Int        @default(0)
+  excursionId      String?
+  excursion        Excursion? @relation(fields: [excursionId], references: [id], onDelete: Cascade)
+  carId            String?
+  car              Car?       @relation(fields: [carId], references: [id], onDelete: Cascade)
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  @@index([type])
+  @@index([excursionId, order])
+  @@index([carId, order])
+}

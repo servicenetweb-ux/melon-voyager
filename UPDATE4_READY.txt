@@ -1,0 +1,1 @@
+Next target: real image picker without URL copy/paste.
